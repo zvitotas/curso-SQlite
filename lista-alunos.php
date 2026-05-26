@@ -9,26 +9,23 @@ $pdo = new PDO(dsn: 'sqlite:' . $databasePath);
 
 $statement = $pdo->query(query: 'SELECT * FROM students;');
 
-while ($studentData = $statement->fetch(PDO::FETCH_ASSOC)) {
-    $student = new Student(
-        $studentData['id'],
-        $studentData['name'],
-        new \DateTimeImmutable($studentData['birth_date'])
-    );
-
-    echo $student->age() . PHP_EOL;
-}
-
-$studentDataList = $statement->fetch(mode: PDO::FETCH_ASSOC);
-
+// 1. Initialize the array BEFORE the loop
 $studentList = [];
 
-foreach ($studentDataList as $studentData) {
-    $studentList[] = new Student(
-        $studentData['id'],
-        $studentData['name'],
-        new \DateTimeImmutable($studentData['birth_date'])
+// 2. Loop through the database rows
+while ($studentData = $statement->fetch(PDO::FETCH_ASSOC)) {
+    $student = new Student(
+            $studentData['id'],
+            $studentData['name'],
+            new \DateTimeImmutable($studentData['birth_date'])
     );
+
+    // This prints the ages (15)
+    echo $student->age() . PHP_EOL;
+
+    // 3. Save the student object into your array right here
+    $studentList[] = $student;
 }
 
+// 4. Dump the array (it will no longer be empty!)
 var_dump($studentList);

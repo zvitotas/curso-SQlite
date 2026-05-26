@@ -9,8 +9,17 @@ $pdo = new PDO('sqlite:' . $databasePath);
 
 $pdo->exec('CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY, name TEXT, birth_date TEXT);');
 
-$student = new Student(null, 'Victor Rodrigues', new \DateTimeImmutable('2011-04-23'));
+$student = new Student(
+    null,
+    "Victor', ''); DROP TABLE students; -- Rodrigues",
+    new \DateTimeImmutable('2011-04-23')
+);
 
-$sqlInsert = "INSERT INTO students (name, birth_date) VALUES ('{$student->name()}', '{$student->birthDate()->format('Y-m-d')}')";
+$sqlInsert = "INSERT INTO students (name, birth_date) VALUES (:name, :birth_date))";
+$statement = $pdo->prepare($sqlInsert);
+$statement->bindParam(':name', $name);
+$statement->bindValue(2, $student->birthDate()->format('Y-m-d'));
 
-var_dump($pdo->exec($sqlInsert));
+if ($statement->execute()) {
+    echo "Aluno inserido com sucesso!";
+};
