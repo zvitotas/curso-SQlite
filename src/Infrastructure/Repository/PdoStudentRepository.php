@@ -3,58 +3,15 @@
 namespace Alura\Pdo\Infrastructure\Repository;
 
 use Alura\Pdo\Domain\Model\Student;
-use Alura\Pdo\Domain\Repository\StudentRepository;
-use Alura\Pdo\Infrastructure\Persistence\ConnectionCreator;
 use PDO;
 
-class PdoStudentRepository implements StudentRepository
+class PdoStudentRepository
 {
-    private \PDO $connection;
+    private PDO $connection;
 
-    public function __construct()
+    public function __construct(PDO $connection)
     {
-        $this->connection = ConnectionCreator::createConnection();
-    }
-
-    public function allStudents(): array
-    {
-        $sqlQuery = 'SELECT * FROM students;';
-        $stmt = $this->connection->query($sqlQuery);
-
-        return $this->hydrateStudentList($stmt);
-    }
-
-    public function studentsBirthAt(\DateTimeInterface $birthDate): array
-    {
-        $sqlQuery = 'SELECT * FROM students WHERE birth_date = ?;';
-
-        $stmt = $this->connection->prepare($sqlQuery);
-
-        $stmt->bindValue(
-            1,
-            $birthDate->format('Y-m-d')
-        );
-
-        $stmt->execute();
-
-        return $this->hydrateStudentList($stmt);
-    }
-
-    private function hydrateStudentList(\PDOStatement $stmt): array
-    {
-        $studentDataList = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-        $studentList = [];
-
-        foreach ($studentDataList as $studentData) {
-            $studentList[] = new Student(
-                $studentData['id'],
-                $studentData['name'],
-                new \DateTimeImmutable($studentData['birth_date'])
-            );
-        }
-
-        return $studentList;
+        $this->connection = $connection;
     }
 
     public function save(Student $student): bool
@@ -66,8 +23,37 @@ class PdoStudentRepository implements StudentRepository
         return $this->update($student);
     }
 
-    public function remove(Student $student): bool
+    private function insert(Student $student): bool
     {
-        return true;
+        $sqlInsert = "INSERT INTO student (name, birth_date) VALUES (:name, :birth_date);";
+        $statement = $this->connection->prepare($sqlInsert);
+        if ($statement === false) {
+
+            throw new \RuntimeException('Erro na query do banco');
+
+        }
+
+        $success = $statement->execute([
+            ':name' => $student->name(),
+            ':birth_date' => $student->birthDate()->format('Y-m-d'),
+        ]);
+
+        if ($success) {
+            $student->defineId($this->connection->lastInsertId());
+        }
+
+        return $success;
+    }
+
+    private function update(Student $student): bool
+    {
+        $sqlUpdate = "UPDATE students SET name = :name, birth_date = :birth_date WHERE id = :id;";
+        $statement = $this->connection->prepare($sqlUpdate);
+
+        return $statement->execute([
+            ':name' => $student->name(),
+            ':birth_date' => $student->birthDate()->format('Y-m-d'),
+            ':id' => $student->id(),
+        ]);
     }
 }

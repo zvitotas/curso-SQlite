@@ -34,6 +34,11 @@ class Student
         return $this->name;
     }
 
+    public function birthDate(): \DateTimeInterface
+    {
+        return $this->birthDate;
+    }
+
     public function changeName(string $newName): void
     {
         $this->name = $newName;
