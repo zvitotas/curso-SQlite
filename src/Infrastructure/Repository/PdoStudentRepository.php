@@ -25,15 +25,10 @@ class PdoStudentRepository
 
     private function insert(Student $student): bool
     {
-        $sqlInsert = "INSERT INTO student (name, birth_date) VALUES (:name, :birth_date);";
-        $statement = $this->connection->prepare($sqlInsert);
-        if ($statement === false) {
+        $sqlInsert = "INSERT INTO students (name, birth_date) VALUES (:name, :birth_date);";
+        $stmt = $this->connection->prepare($sqlInsert);
 
-            throw new \RuntimeException('Erro na query do banco');
-
-        }
-
-        $success = $statement->execute([
+        $success = $stmt->execute([
             ':name' => $student->name(),
             ':birth_date' => $student->birthDate()->format('Y-m-d'),
         ]);
