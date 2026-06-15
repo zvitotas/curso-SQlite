@@ -5,6 +5,9 @@ $pdo = new PDO('sqlite:' . $databasePath);
 
 echo "Conectei\n";
 
+$pdo->exec("INSERT INTO phones (area_code, number, student_id) VALUES ('24', '999999999', 1), ('21', '2222222222', 1)");
+exit();
+
 $createTableSql = 'CREATE TABLE IF NOT EXISTS students (
     id INTEGER PRIMARY KEY,
     name TEXT,
@@ -14,7 +17,7 @@ $createTableSql = 'CREATE TABLE IF NOT EXISTS students (
     CREATE TABLE IF NOT EXISTS phones (
     id INTEGER PRIMARY KEY,
     area_code TEXT,
-    number TEXT, -- Added the missing comma here
+    number TEXT,
     student_id INTEGER,
     FOREIGN KEY (student_id) REFERENCES students(id)
     );
